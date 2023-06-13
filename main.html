@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Delivery Report</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Delivery Report</h1>
+    <label for="month">Select a Month:</label>
+    <select id="month">
+        <option value="1">January</option>
+        <option value="2">February</option>
+        <option value="3">March</option>
+        <!-- Add more options for each month -->
+    </select>
+    <button onclick="getData()">Get Data</button>
+    <canvas id="pieChart"></canvas>
+
+    <script>
+        function getData() {
+            var selectedMonth = document.getElementById("month").value;
+            var apiUrl = "http://localhost:5000/query";  // Replace with your API endpoint
+
+            var query = "SELECT delivery_status FROM delivery_data WHERE month=" + selectedMonth;
+
+            axios.post(apiUrl, { "query": query })
+                .then(function (response) {
+                    var data = response.data;
+
+                    var onTimeCount = 0;
+                    var missedCount = 0;
+
+                    data.forEach(function (row) {
+                        if (row.delivery_status === "On Time") {
+                            onTimeCount++;
+                        } else if (row.delivery_status === "Missed Delivery") {
+                            missedCount++;
+                        }
+                    });
+
+                    // Create the pie chart
+                    var ctx = document.getElementById("pieChart").getContext("2d");
+                    var chart = new Chart(ctx, {
+                        type: "pie",
+                        data: {
+                            labels: ["On Time Delivery", "Missed Delivery"],
+                            datasets: [{
+                                data: [onTimeCount, missedCount],
+                                backgroundColor: ["green", "red"]
+                            }]
+                        }
+                    });
+                })
+                .catch(function (error) {
+                    console.log(error);
+                });
+        }
+    </script>
+</body>
+</html>
